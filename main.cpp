@@ -89,27 +89,11 @@ bool Window::IsDone() {
 sf::Vector2u Window::GetWindowSize() {
     return m_windowSize;
 }
+
 void Window::Draw(sf::Drawable& l_drawable) {
     m_window.draw(l_drawable);
 }
 
-enum class EventType{
-    
-       KeyDown = sf::Event::KeyPressed,
-       KeyUp = sf::Event::KeyReleased,
-       MButtonDown = sf::Event::MouseButtonPressed,
-       MButtonUp = sf::Event::MouseButtonReleased,
-       MouseWheel = sf::Event::MouseWheelMoved,
-       WindowResized = sf::Event::Resized,
-       GainedFocus = sf::Event::GainedFocus,
-       LostFocus = sf::Event::LostFocus,
-       MouseEntered = sf::Event::MouseEntered,
-       MouseLeft = sf::Event::MouseLeft,
-       Closed = sf::Event::Closed,
-       TextEntered = sf::Event::TextEntered,
-       Keyboard = sf::Event::Count + 1, Mouse, Joystick
-    
-};
 
 class Hero {
     
@@ -297,15 +281,13 @@ sf::Sprite* Hero::GetSprite_p() {
     return m_hero_curSprite;
 }
 
-
+class BaseBlast;
 
 class Blast {
     
 public:
     
-    Blast();
-    Blast(std::string texture_up, std::string texture_down, std::string texture_left,  std::string texture_right);
-    Blast(Hero& hero, std::string texture_up, std::string texture_down, std::string texture_left,  std::string texture_right);
+    Blast(Hero& hero, BaseBlast& base);
     void MoveBlast(Window& window);
     sf::Sprite* GetSprite_p();
     sf::Sprite* SetSprite();
@@ -313,17 +295,14 @@ public:
     
 private:
     
-    sf::Texture m_blast_texture_up;
-    sf::Texture m_blast_texture_down;
-    sf::Texture m_blast_texture_left;
-    sf::Texture m_blast_texture_right;
-    
     sf::Sprite m_blast_spr_up;
     sf::Sprite m_blast_spr_down;
     sf::Sprite m_blast_spr_left;
     sf::Sprite m_blast_spr_right;
+
     
     sf::Sprite* m_blast_curSprite;
+    sf::Sprite m_blast_curSpr;
     
     sf::Vector2f m_speed;
     sf::Keyboard::Key m_direction;
@@ -331,6 +310,96 @@ private:
     
     
 };
+
+
+class BaseBlast {
+    
+    public:
+        
+    sf::Clock GetCooldown();
+    sf::Sprite* GiveSprite(sf::Keyboard::Key key);
+    sf::Texture* GetTexture(sf::Keyboard::Key key);
+    BaseBlast() = delete;
+    BaseBlast(std::string texture_up, std::string texture_down, std::string texture_left,  std::string texture_right);
+    int GetCount();
+    void SetCount(int count);
+    Blast** GetBlasts();
+    
+    sf::Time m_cooldown;
+    sf::Clock m_coolclock;
+    
+    
+    sf::Sprite m_blast_spr_up;
+    sf::Sprite m_blast_spr_down;
+    sf::Sprite m_blast_spr_left;
+    sf::Sprite m_blast_spr_right;
+        
+    private:
+        
+    sf::Texture m_blast_texture_up;
+    sf::Texture m_blast_texture_down;
+    sf::Texture m_blast_texture_left;
+    sf::Texture m_blast_texture_right;
+    
+    
+    
+    int m_count;
+    
+    Blast** m_blasts;
+};
+
+
+sf::Texture* BaseBlast::GetTexture(sf::Keyboard::Key key) {
+    
+    if (key == sf::Keyboard::Up) {
+        return &m_blast_texture_up;
+         }
+         
+         if (key == sf::Keyboard::Down) {
+             return &m_blast_texture_down;
+         }
+         if (key == sf::Keyboard::Left) {
+             return &m_blast_texture_left;
+         }
+         if (key == sf::Keyboard::Right) {
+             return &m_blast_texture_right;
+         }
+    
+}
+
+
+int BaseBlast::GetCount() {
+    return m_count;
+}
+
+sf::Clock BaseBlast::GetCooldown() {
+    return m_coolclock;
+}
+
+sf::Sprite* BaseBlast::GiveSprite(sf::Keyboard::Key key) {
+    
+    if (key == sf::Keyboard::Up) {
+           return &m_blast_spr_up;
+       }
+       
+       if (key == sf::Keyboard::Down) {
+           return &m_blast_spr_down;
+       }
+       if (key == sf::Keyboard::Left) {
+           return &m_blast_spr_left;
+       }
+       if (key == sf::Keyboard::Right) {
+           return &m_blast_spr_right;
+       }
+}
+
+void BaseBlast::SetCount(int count) {
+    m_count = count;
+}
+
+Blast** BaseBlast::GetBlasts() {
+    return m_blasts;
+}
 
 
 sf::Sprite* Blast::SetSprite() {
@@ -355,7 +424,7 @@ sf::Sprite* Blast::GetSprite_p() {
     return m_blast_curSprite;
 }
 
-Blast::Blast(std::string texture_up, std::string texture_down, std::string texture_left,  std::string texture_right) {
+BaseBlast::BaseBlast(std::string texture_up, std::string texture_down, std::string texture_left,  std::string texture_right) {
     
     m_blast_texture_up.loadFromFile(texture_up);
     m_blast_texture_down.loadFromFile(texture_down);
@@ -367,33 +436,39 @@ Blast::Blast(std::string texture_up, std::string texture_down, std::string textu
     m_blast_spr_left.setTexture(m_blast_texture_left);
     m_blast_spr_right.setTexture(m_blast_texture_right);
     
-    m_speed = sf::Vector2f(2.0f, 2.0f);
-    is_shot = false;
     
-    m_blast_curSprite = SetSprite();
-     m_blast_curSprite->setPosition(-100.f, -100.f);;
+    m_blasts = new Blast*[10];
+    m_count = 0;
+    m_cooldown = sf::seconds(0.5f);
+    m_coolclock.getElapsedTime();
+    
+//    m_speed = sf::Vector2f(2.0f, 2.0f);
+//    is_shot = false;
+//
+//    m_blast_curSprite = SetSprite();
+//     m_blast_curSprite->setPosition(-100.f, -100.f);;
     
 }
 
-Blast::Blast(Hero& hero, std::string texture_up, std::string texture_down, std::string texture_left,  std::string texture_right) {
+Blast::Blast(Hero& hero, BaseBlast& base_blast) {
     
-    m_blast_texture_up.loadFromFile(texture_up);
-    m_blast_texture_down.loadFromFile(texture_down);
-    m_blast_texture_left.loadFromFile(texture_left);
-    m_blast_texture_right.loadFromFile(texture_right);
-    
-    m_blast_spr_up.setTexture(m_blast_texture_up);
-    m_blast_spr_down.setTexture(m_blast_texture_down);
-    m_blast_spr_left.setTexture(m_blast_texture_left);
-    m_blast_spr_right.setTexture(m_blast_texture_right);
-    
-    m_speed = sf::Vector2f(2.0f, 2.0f);
+    m_speed = sf::Vector2f(1.8f, 1.8f);
     m_direction = hero.getDirection();
     m_position = hero.getPosition();
     is_shot = true;
     
-    m_blast_curSprite = SetSprite();
-    m_blast_curSprite->setPosition(m_position.x, m_position.y);;
+     m_blast_spr_up = base_blast.m_blast_spr_up;
+     m_blast_spr_down = base_blast.m_blast_spr_down;
+     m_blast_spr_left = base_blast.m_blast_spr_left;
+     m_blast_spr_right = base_blast.m_blast_spr_right;
+    
+    std::cout << " created " << m_position.x << " " << m_position.y << std::endl;
+    
+    m_blast_curSprite = new sf::Sprite;
+    m_blast_curSprite->setTexture(*(base_blast.GetTexture(m_direction)));
+    //m_blast_curSpr = m_blast_spr_up;
+    //m_blast_curSpr.setPosition(m_position.x, m_position.y); // fix
+    m_blast_curSprite->setPosition(m_position.x, m_position.y); // fix
     
 }
 
@@ -408,13 +483,12 @@ public:
     void HandleInput();
     Window* GetWindow();
     Hero* GetHero();
-    Blast* GetBlast();
     
 private:
     
     Window m_window;
     Hero m_hero;
-    Blast m_blast;
+    BaseBlast m_base_blasts;
 //    Blast m_blast;
 };
 
@@ -430,11 +504,11 @@ Hero* Game::GetHero() {
     return &m_hero;
 }
 
-Blast* Game::GetBlast() {
-    return &m_blast;
-}
+//Blast* Game::GetBlast() {
+//    return &m_blast;
+//}
 
-Game::Game(): m_window("Chapter 1", sf::Vector2u(1200,800)), m_hero("Shepard", "/Users/igorsidelnikov/Downloads/64723624.jpg", "/Users/igorsidelnikov/Downloads/top.png", "/Users/igorsidelnikov/Downloads/down.png", "/Users/igorsidelnikov/Downloads/left.png", "/Users/igorsidelnikov/Downloads/right.png", "/Users/igorsidelnikov/Downloads/top2.png", "/Users/igorsidelnikov/Downloads/down2.png", "/Users/igorsidelnikov/Downloads/left2.png", "/Users/igorsidelnikov/Downloads/right2.png"), m_blast("/Users/igorsidelnikov/Downloads/blast_up.png", "/Users/igorsidelnikov/Downloads/blast_down.png", "/Users/igorsidelnikov/Downloads/blast_left.png", "/Users/igorsidelnikov/Downloads/blast_right.png") {
+Game::Game(): m_window("Chapter 1", sf::Vector2u(1200,800)), m_hero("Shepard", "/Users/igorsidelnikov/Downloads/64723624.jpg", "/Users/igorsidelnikov/Downloads/top.png", "/Users/igorsidelnikov/Downloads/down.png", "/Users/igorsidelnikov/Downloads/left.png", "/Users/igorsidelnikov/Downloads/right.png", "/Users/igorsidelnikov/Downloads/top2.png", "/Users/igorsidelnikov/Downloads/down2.png", "/Users/igorsidelnikov/Downloads/left2.png", "/Users/igorsidelnikov/Downloads/right2.png"), m_base_blasts("/Users/igorsidelnikov/Downloads/blast_up.png", "/Users/igorsidelnikov/Downloads/blast_down.png", "/Users/igorsidelnikov/Downloads/blast_left.png", "/Users/igorsidelnikov/Downloads/blast_right.png") {
     
 }
 
@@ -515,7 +589,11 @@ void Game::Render(){
     
     m_window.BeginDraw();
     m_window.Draw(*(m_hero.GetSprite_p()));
-    //m_window.Draw(*(m_blast.GetSprite_p()));
+    Blast** blasts = m_base_blasts.GetBlasts(); //todo in function
+    for (int i = 0; i < m_base_blasts.GetCount(); ++i) {
+        m_window.Draw(*(blasts[i]->GetSprite_p()));
+       // std::cout << "MUST BE DRAWN " <<  i << std::endl;
+    }
     m_window.EndDraw(); // Display.
 }// Clear.
 
@@ -523,15 +601,16 @@ void Game::Render(){
 
 void Game::Update() {
     
-    m_window.Update(); // Update window events.
+    m_window.Update();
+    // Update window events.
     Hero* myhero = GetHero();
-    Blast* myblast = GetBlast();
+    Blast** blasts = m_base_blasts.GetBlasts();
     
     myhero->MoveHero_keypr(m_window);
-    
-   // if (myblast->is_shot == true) {
-     //   myblast->MoveBlast(m_window);
-    //}
+
+    for (int i = 0; i < m_base_blasts.GetCount(); ++i) {
+        blasts[i]->MoveBlast(m_window);
+    } // todo in function
     myhero->UpdateSprite();
     
   }
@@ -540,7 +619,7 @@ void Game::HandleInput() {
     
     Hero* myhero = GetHero();
     
-    static sf::Keyboard::Key key;
+    static sf::Keyboard::Key key; // TODO
     bool movement = false;
     
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
@@ -568,9 +647,18 @@ void Game::HandleInput() {
         
     m_hero.SetMovement(movement, key);
     
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-        m_blast = *(new Blast(m_hero, "/Users/igorsidelnikov/Downloads/blast_up.png", "/Users/igorsidelnikov/Downloads/blast_down.png", "/Users/igorsidelnikov/Downloads/blast_left.png", "/Users/igorsidelnikov/Downloads/blast_right.png"));
-           }
+    sf::Time time = m_base_blasts.m_coolclock.getElapsedTime();
+    
+    if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Space) == true) && (time > sf::seconds(0.3f)) ) { //TODO
+        
+        m_base_blasts.m_coolclock.restart();
+        int count = m_base_blasts.GetCount();
+        
+       // std::cout << "count: " << count << "time " << time.asSeconds() <<  std::endl;
+        Blast** blasts = m_base_blasts.GetBlasts(); // TODO in function which checks if the number of shots does not exceed max (e.g 30)
+        blasts[count] = new Blast(*(myhero), m_base_blasts);
+        m_base_blasts.SetCount(count + 1);
+    }
 }
 
 
@@ -579,6 +667,7 @@ int main(int, char const**) {
     
     Game game;
     // Creating our game object.
+    
     while(game.GetWindow()->IsDone() == false) {
         // Game loop.
         game.HandleInput();
@@ -586,86 +675,5 @@ int main(int, char const**) {
         game.Render();
     }
     
-//    sf::RenderWindow window(sf::VideoMode(800, 600), "My window");
-//
-////    sf::RenderTexture renderTexture;
-////    renderTexture.create(800, 600);
-////
-////    sf::Texture texture;
-////    texture.loadFromFile("/Users/igorsidelnikov/Downloads/titanium_texture1752.jpg");
-//
-//    sf::Texture shep;
-//    shep.loadFromFile("/Users/igorsidelnikov/Downloads/64723624.jpg");
-//
-//    sf::Sprite shep_spr;
-//    shep_spr.setTexture(shep);
-//    shep_spr.setTextureRect(sf::IntRect(10, 10, 300, 300));
-//    sf::Vector2u shep_size = shep.getSize();
-//    std::cout << shep_size.x << " " << shep_size.y;
-//    shep_spr.setOrigin(290 / 2, 290 / 2);
-//    shep_spr.setPosition(sf::Vector2f(400.f, 300.f));
-//    sf::Vector2f increment(0.1f, 0.1f);
-//
-//
-////    sf::Sprite sprite;
-////    sprite.setTexture(texture);
-////    sprite.setColor(sf::Color(255, 255, 255, 128));
-////    sprite.setPosition(sf::Vector2f(10.f, 50.f));
-////
-////    sf::CircleShape shape(50.f);
-////    shape.setFillColor(sf::Color::Yellow);
-////    shape.setTexture(&texture);
-////    shape.setTextureRect(sf::IntRect(0, 0, 0, 100));
-////
-////    sf::RectangleShape rectangle(sf::Vector2f(128.0f,128.0f));
-////    rectangle.setOrigin(64.0f,64.0f);
-////    rectangle.setFillColor(sf::Color::Green);
-////    rectangle.setPosition(400, 300);
-//
-//
-//
-//
-//
-//    while (window.isOpen()) {
-//
-////        renderTexture.clear(sf::Color::Yellow);
-////        renderTexture.display();
-//        window.clear();
-//        if ((shep_spr.getPosition().x + 290 / 2 > window.getSize().x && increment.x > 0) || (shep_spr.getPosition().x - 290 / 2 < 0 &&
-//                                                                                         increment.x < 0))
-//        {
-//            // Reverse the direction on X axis.
-//            increment.x = -increment.x;
-//        }
-//        if ((shep_spr.getPosition().y + 290 / 2 > window.getSize().y && increment.y > 0) || (shep_spr.getPosition().y - 290 / 2 < 0 &&
-//                                                                                         increment.y < 0))
-//        {
-//            // Reverse the direction on Y axis.
-//            increment.y = -increment.y;
-//        }
-//
-//
-//        sf::Event event;
-//        while (window.pollEvent(event)) {
-//
-//            if (event.type == sf::Event::Closed) {
-//                window.close();
-//            }
-//
-//        }
-//
-//        shep_spr.setPosition(shep_spr.getPosition() + increment);
-//
-//        window.draw(shep_spr);
-//        //        window.draw(shape);
-//        //        window.draw(rectangle);
-//        window.display();
-//
-//
-//
-//
-//    }
-    
-
     return EXIT_SUCCESS;
 }
