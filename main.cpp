@@ -13,17 +13,21 @@ public:
     Window();
     Window(const std::string& title_t, const sf::Vector2u& size_t);
     ~Window();
+    
     void BeginDraw(); // Clear the window.
-    void EndDraw(); // Display the changes.
+    void Draw(sf::Drawable& drawable);
+    void EndDraw();
+    // Display the changes.
     void Update();
     bool IsDone();
+    
     sf::Vector2u GetWindowSize();
-    void Draw(sf::Drawable& drawable);
     
 private:
     
     void Setup(const std::string& w_title, const sf::Vector2u& w_size);
     void Destroy();
+    
     sf::RenderWindow m_window;
     sf::Vector2u m_windowSize;
     std::string m_windowTitle;
@@ -113,17 +117,21 @@ public:
     
     void UpdateSprite();
     void SwitchSprite(sf::Sprite* spr1, sf::Sprite* spr2);
+    
     void MoveHero(Window& window);
     void MoveHero_keypr(Window& window);
-    void set_movement(bool move, sf::Keyboard::Key key);
+    
+    void SetMovement(bool move, sf::Keyboard::Key key);
+    
     sf::Vector2f getPosition();
     sf::Keyboard::Key getDirection();
+    sf::Sprite& GetSprite();
+    sf::Sprite* GetSprite_p();
+    
     Hero() = delete;
     Hero(std::string name, std::string texture_name, std::string top_name,  std::string down_name,
     std::string left_name,  std::string right_name, std::string top2_name,  std::string down2_name,
     std::string left2_name,  std::string right2_name);
-    sf::Sprite& GetSprite();
-    sf::Sprite* GetSprite_p();
     
 private:
     
@@ -162,104 +170,6 @@ private:
     sf::Vector2f m_position;
     sf::Vector2f m_increment;
 };
-
-
-class Blast {
-    
-public:
-    
-    Blast();
-    Blast(std::string texture_up, std::string texture_down, std::string texture_left,  std::string texture_right);
-    Blast(Hero& hero, std::string texture_up, std::string texture_down, std::string texture_left,  std::string texture_right);
-    void MoveBlast(Window& window);
-    sf::Sprite* GetSprite_p();
-    sf::Sprite* SetSprite();
-    bool is_shot;
-    
-private:
-    
-    sf::Texture m_blast_texture_up;
-    sf::Texture m_blast_texture_down;
-    sf::Texture m_blast_texture_left;
-    sf::Texture m_blast_texture_right;
-    
-    sf::Sprite m_blast_spr_up;
-    sf::Sprite m_blast_spr_down;
-    sf::Sprite m_blast_spr_left;
-    sf::Sprite m_blast_spr_right;
-    
-    sf::Sprite* m_blast_curSprite;
-    
-    sf::Vector2f m_speed;
-    sf::Keyboard::Key m_direction;
-    sf::Vector2f m_position;
-    
-    
-};
-
-
-sf::Sprite* Blast::SetSprite() {
-
-    if (m_direction == sf::Keyboard::Up) {
-        return &m_blast_spr_up;
-    }
-    
-    if (m_direction == sf::Keyboard::Down) {
-        return &m_blast_spr_down;
-    }
-    if (m_direction == sf::Keyboard::Left) {
-        return &m_blast_spr_left;
-    }
-    if (m_direction == sf::Keyboard::Right) {
-        return &m_blast_spr_right;
-    }
-    
-}
-sf::Sprite* Blast::GetSprite_p() {
-    return m_blast_curSprite;
-}
-
-Blast::Blast(std::string texture_up, std::string texture_down, std::string texture_left,  std::string texture_right) {
-    
-    m_blast_texture_up.loadFromFile(texture_up);
-    m_blast_texture_down.loadFromFile(texture_down);
-    m_blast_texture_left.loadFromFile(texture_left);
-    m_blast_texture_right.loadFromFile(texture_right);
-    
-    m_blast_spr_up.setTexture(m_blast_texture_up);
-    m_blast_spr_down.setTexture(m_blast_texture_down);
-    m_blast_spr_left.setTexture(m_blast_texture_left);
-    m_blast_spr_right.setTexture(m_blast_texture_right);
-    
-    m_speed = sf::Vector2f(2.0f, 2.0f);
-    is_shot = false;
-    
-    m_blast_curSprite = SetSprite();
-     m_blast_curSprite->setPosition(-100.f, -100.f);;
-    
-}
-
-Blast::Blast(Hero& hero, std::string texture_up, std::string texture_down, std::string texture_left,  std::string texture_right) {
-    
-    m_blast_texture_up.loadFromFile(texture_up);
-    m_blast_texture_down.loadFromFile(texture_down);
-    m_blast_texture_left.loadFromFile(texture_left);
-    m_blast_texture_right.loadFromFile(texture_right);
-    
-    m_blast_spr_up.setTexture(m_blast_texture_up);
-    m_blast_spr_down.setTexture(m_blast_texture_down);
-    m_blast_spr_left.setTexture(m_blast_texture_left);
-    m_blast_spr_right.setTexture(m_blast_texture_right);
-    
-    m_speed = sf::Vector2f(2.0f, 2.0f);
-    m_direction = hero.getDirection();
-    m_position = hero.getPosition();
-    is_shot = true;
-    
-    m_blast_curSprite = SetSprite();
-    m_blast_curSprite->setPosition(m_position.x, m_position.y);;
-    
-}
 
 sf::Vector2f Hero::getPosition() {
     return m_position;
@@ -369,104 +279,9 @@ void Hero::UpdateSprite() {
             break;
         }
     }
-    
-//    if (m_direction == sf::Keyboard::Up) {
-//
-//
-//        if (m_moving == true) {
-//           // std::cout <<" JJEFJ";
-//            if (m_switch_sprites.getElapsedTime() > sf::seconds(0.2f)) {
-//                m_switch_sprites.restart();
-//              //  std::cout <<" JJEFJ";
-//                if (m_which_sprite == 0) {
-//                     // std::cout <<" JJEFJ";
-//                    m_hero_sprite.setTexture(m_hero_up_texture, true);
-//                    m_which_sprite = 1;
-//                } else if (m_which_sprite == 1) {
-//                    //  std::cout <<" JJEFJ";
-//                    m_hero_sprite.setTexture(m_hero_up_texture_2, true);
-//                    m_which_sprite = 0;
-//                }
-//            }
-//
-//        } else {
-//            m_hero_sprite.setTexture(m_hero_up_texture, true);
-//        }
-//    }
-//
-//   if (m_direction == sf::Keyboard::Down) {
-//
-//
-//           if (m_moving == true) {
-//              // std::cout <<" JJEFJ";
-//               if (m_switch_sprites.getElapsedTime() > sf::seconds(0.2f)) {
-//                   m_switch_sprites.restart();
-//                 //  std::cout <<" JJEFJ";
-//                   if (m_which_sprite == 0) {
-//                        // std::cout <<" JJEFJ";
-//                       m_hero_sprite.setTexture(m_hero_down_texture, true);
-//                       m_which_sprite = 1;
-//                   } else if (m_which_sprite == 1) {
-//                       //  std::cout <<" JJEFJ";
-//                       m_hero_sprite.setTexture(m_hero_down_texture_2, true);
-//                       m_which_sprite = 0;
-//                   }
-//               }
-//
-//           } else {
-//               m_hero_sprite.setTexture(m_hero_down_texture, true);
-//           }
-//   }
-//
-//  if (m_direction == sf::Keyboard::Left) {
-//
-//           if (m_moving == true) {
-//              // std::cout <<" JJEFJ";
-//               if (m_switch_sprites.getElapsedTime() > sf::seconds(0.2f)) {
-//                   m_switch_sprites.restart();
-//                 //  std::cout <<" JJEFJ";
-//                   if (m_which_sprite == 0) {
-//                        // std::cout <<" JJEFJ";
-//                       m_hero_sprite.setTexture(m_hero_left_texture, true);
-//                       m_which_sprite = 1;
-//                   } else if (m_which_sprite == 1) {
-//                       //  std::cout <<" JJEFJ";
-//                       m_hero_sprite.setTexture(m_hero_left_texture_2, true);
-//                       m_which_sprite = 0;
-//                   }
-//               }
-//
-//           } else {
-//               m_hero_sprite.setTexture(m_hero_left_texture, true);
-//           }
-//  }
-//
-//   if (m_direction == sf::Keyboard::Right) {
-//
-//           if (m_moving == true) {
-//              // std::cout <<" JJEFJ";
-//               if (m_switch_sprites.getElapsedTime() > sf::seconds(0.2f)) {
-//                   m_switch_sprites.restart();
-//                 //  std::cout <<" JJEFJ";
-//                   if (m_which_sprite == 0) {
-//                        // std::cout <<" JJEFJ";
-//                       m_hero_sprite.setTexture(m_hero_right_texture, true);
-//                       m_which_sprite = 1;
-//                   } else if (m_which_sprite == 1) {
-//                       //  std::cout <<" JJEFJ";
-//                       m_hero_sprite.setTexture(m_hero_right_texture_2, true);
-//                       m_which_sprite = 0;
-//                   }
-//               }
-//
-//           } else {
-//               m_hero_sprite.setTexture(m_hero_right_texture, true);
-//           }
-//   }
-    
 }
 
-void Hero::set_movement(bool move, sf::Keyboard::Key key) {
+void Hero::SetMovement(bool move, sf::Keyboard::Key key) {
 
     m_direction = key;
     m_moving = move;
@@ -480,6 +295,106 @@ sf::Sprite& Hero::GetSprite() {
 
 sf::Sprite* Hero::GetSprite_p() {
     return m_hero_curSprite;
+}
+
+
+
+class Blast {
+    
+public:
+    
+    Blast();
+    Blast(std::string texture_up, std::string texture_down, std::string texture_left,  std::string texture_right);
+    Blast(Hero& hero, std::string texture_up, std::string texture_down, std::string texture_left,  std::string texture_right);
+    void MoveBlast(Window& window);
+    sf::Sprite* GetSprite_p();
+    sf::Sprite* SetSprite();
+    bool is_shot;
+    
+private:
+    
+    sf::Texture m_blast_texture_up;
+    sf::Texture m_blast_texture_down;
+    sf::Texture m_blast_texture_left;
+    sf::Texture m_blast_texture_right;
+    
+    sf::Sprite m_blast_spr_up;
+    sf::Sprite m_blast_spr_down;
+    sf::Sprite m_blast_spr_left;
+    sf::Sprite m_blast_spr_right;
+    
+    sf::Sprite* m_blast_curSprite;
+    
+    sf::Vector2f m_speed;
+    sf::Keyboard::Key m_direction;
+    sf::Vector2f m_position;
+    
+    
+};
+
+
+sf::Sprite* Blast::SetSprite() {
+
+    if (m_direction == sf::Keyboard::Up) {
+        return &m_blast_spr_up;
+    }
+    
+    if (m_direction == sf::Keyboard::Down) {
+        return &m_blast_spr_down;
+    }
+    if (m_direction == sf::Keyboard::Left) {
+        return &m_blast_spr_left;
+    }
+    if (m_direction == sf::Keyboard::Right) {
+        return &m_blast_spr_right;
+    }
+    
+}
+
+sf::Sprite* Blast::GetSprite_p() {
+    return m_blast_curSprite;
+}
+
+Blast::Blast(std::string texture_up, std::string texture_down, std::string texture_left,  std::string texture_right) {
+    
+    m_blast_texture_up.loadFromFile(texture_up);
+    m_blast_texture_down.loadFromFile(texture_down);
+    m_blast_texture_left.loadFromFile(texture_left);
+    m_blast_texture_right.loadFromFile(texture_right);
+    
+    m_blast_spr_up.setTexture(m_blast_texture_up);
+    m_blast_spr_down.setTexture(m_blast_texture_down);
+    m_blast_spr_left.setTexture(m_blast_texture_left);
+    m_blast_spr_right.setTexture(m_blast_texture_right);
+    
+    m_speed = sf::Vector2f(2.0f, 2.0f);
+    is_shot = false;
+    
+    m_blast_curSprite = SetSprite();
+     m_blast_curSprite->setPosition(-100.f, -100.f);;
+    
+}
+
+Blast::Blast(Hero& hero, std::string texture_up, std::string texture_down, std::string texture_left,  std::string texture_right) {
+    
+    m_blast_texture_up.loadFromFile(texture_up);
+    m_blast_texture_down.loadFromFile(texture_down);
+    m_blast_texture_left.loadFromFile(texture_left);
+    m_blast_texture_right.loadFromFile(texture_right);
+    
+    m_blast_spr_up.setTexture(m_blast_texture_up);
+    m_blast_spr_down.setTexture(m_blast_texture_down);
+    m_blast_spr_left.setTexture(m_blast_texture_left);
+    m_blast_spr_right.setTexture(m_blast_texture_right);
+    
+    m_speed = sf::Vector2f(2.0f, 2.0f);
+    m_direction = hero.getDirection();
+    m_position = hero.getPosition();
+    is_shot = true;
+    
+    m_blast_curSprite = SetSprite();
+    m_blast_curSprite->setPosition(m_position.x, m_position.y);;
+    
 }
 
 class Game {
@@ -538,26 +453,29 @@ void Hero::MoveHero(Window& m_window) {
     }
     m_hero_sprite.setPosition(m_hero_sprite.getPosition().x + m_increment.x, m_hero_sprite.getPosition().y + m_increment.y);
 }
+
 void Blast::MoveBlast(Window& window) {
     
+    sf::Vector2f cur_position = m_blast_curSprite->getPosition();
+    
     if (m_direction == sf::Keyboard::Left) {
-        m_blast_curSprite->setPosition(m_blast_curSprite->getPosition().x - m_speed.x, m_blast_curSprite->getPosition().y);
-        m_position = sf::Vector2f(m_blast_curSprite->getPosition().x - m_speed.x, m_blast_curSprite->getPosition().y);
+        m_blast_curSprite->setPosition(cur_position.x - m_speed.x, cur_position.y);
+        m_position = sf::Vector2f(cur_position.x - m_speed.x, cur_position.y);
     }
     
     if (m_direction == sf::Keyboard::Right) {
-        m_blast_curSprite->setPosition(m_blast_curSprite->getPosition().x + m_speed.x, m_blast_curSprite->getPosition().y);
-        m_position = sf::Vector2f(m_blast_curSprite->getPosition().x + m_speed.x, m_blast_curSprite->getPosition().y);
+       m_blast_curSprite->setPosition(cur_position.x + m_speed.x, cur_position.y);
+       m_position = sf::Vector2f(cur_position.x + m_speed.x, cur_position.y);
     }
     
     if (m_direction == sf::Keyboard::Up) {
-        m_blast_curSprite->setPosition(m_blast_curSprite->getPosition().x, m_blast_curSprite->getPosition().y - m_speed.y);
-        m_position = sf::Vector2f(m_blast_curSprite->getPosition().x, m_blast_curSprite->getPosition().y - m_speed.y);
+       m_blast_curSprite->setPosition(cur_position.x, cur_position.y - m_speed.y);
+        m_position = sf::Vector2f(cur_position.x, cur_position.y - m_speed.y);
     }
     
     if (m_direction == sf::Keyboard::Down) {
-        m_blast_curSprite->setPosition(m_blast_curSprite->getPosition().x, m_blast_curSprite->getPosition().y + m_speed.y);
-        m_position = sf::Vector2f(m_blast_curSprite->getPosition().x , m_blast_curSprite->getPosition().y + m_speed.y);
+       m_blast_curSprite->setPosition(cur_position.x, cur_position.y + m_speed.y);
+        m_position = sf::Vector2f(cur_position.x, cur_position.y + m_speed.y);
     }
 }
 
@@ -567,33 +485,37 @@ void Hero::MoveHero_keypr(Window &m_window) {
     sf::Vector2u l_textSize = m_hero_texture.getSize();
     
     if (m_moving == true) {
+        
+        sf::Vector2f cur_position = m_hero_curSprite->getPosition();
+        
         if (m_direction == sf::Keyboard::Left) {
-            m_hero_curSprite->setPosition(m_hero_curSprite->getPosition().x - m_increment.x, m_hero_curSprite->getPosition().y);
-            m_position = sf::Vector2f(m_hero_curSprite->getPosition().x - m_increment.x, m_hero_curSprite->getPosition().y);
+            m_hero_curSprite->setPosition(cur_position.x - m_increment.x, cur_position.y);
+            m_position = sf::Vector2f(cur_position.x - m_increment.x, cur_position.y);
         }
         
         if (m_direction == sf::Keyboard::Right) {
-           m_hero_curSprite->setPosition(m_hero_curSprite->getPosition().x + m_increment.x, m_hero_curSprite->getPosition().y);
-             m_position = sf::Vector2f(m_hero_curSprite->getPosition().x + m_increment.x, m_hero_curSprite->getPosition().y);
+           m_hero_curSprite->setPosition(cur_position.x + m_increment.x, cur_position.y);
+           m_position = sf::Vector2f(cur_position.x + m_increment.x, cur_position.y);
         }
         
         if (m_direction == sf::Keyboard::Up) {
-            m_hero_curSprite->setPosition(m_hero_curSprite->getPosition().x, m_hero_curSprite->getPosition().y - m_increment.y);
-            m_position = sf::Vector2f(m_hero_curSprite->getPosition().x, m_hero_curSprite->getPosition().y - m_increment.y);
+           m_hero_curSprite->setPosition(cur_position.x, cur_position.y - m_increment.y);
+            m_position = sf::Vector2f(cur_position.x, cur_position.y - m_increment.y);
         }
         
         if (m_direction == sf::Keyboard::Down) {
-            m_hero_curSprite->setPosition(m_hero_curSprite->getPosition().x, m_hero_curSprite->getPosition().y + m_increment.y);
-             m_position = sf::Vector2f(m_hero_curSprite->getPosition().x, m_hero_curSprite->getPosition().y + m_increment.y);
+           m_hero_curSprite->setPosition(cur_position.x, cur_position.y + m_increment.y);
+            m_position = sf::Vector2f(cur_position.x, cur_position.y + m_increment.y);
         }
     }
     
 }
 
 void Game::Render(){
+    
     m_window.BeginDraw();
     m_window.Draw(*(m_hero.GetSprite_p()));
-    m_window.Draw(*(m_blast.GetSprite_p()));
+    //m_window.Draw(*(m_blast.GetSprite_p()));
     m_window.EndDraw(); // Display.
 }// Clear.
 
@@ -606,9 +528,10 @@ void Game::Update() {
     Blast* myblast = GetBlast();
     
     myhero->MoveHero_keypr(m_window);
-    if (myblast->is_shot == true) {
-        myblast->MoveBlast(m_window);
-    }
+    
+   // if (myblast->is_shot == true) {
+     //   myblast->MoveBlast(m_window);
+    //}
     myhero->UpdateSprite();
     
   }
@@ -643,7 +566,7 @@ void Game::HandleInput() {
             movement = true;
         }
         
-    m_hero.set_movement(movement, key);
+    m_hero.SetMovement(movement, key);
     
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
         m_blast = *(new Blast(m_hero, "/Users/igorsidelnikov/Downloads/blast_up.png", "/Users/igorsidelnikov/Downloads/blast_down.png", "/Users/igorsidelnikov/Downloads/blast_left.png", "/Users/igorsidelnikov/Downloads/blast_right.png"));
@@ -654,7 +577,8 @@ void Game::HandleInput() {
 int main(int, char const**) {
     
     
-    Game game; // Creating our game object.
+    Game game;
+    // Creating our game object.
     while(game.GetWindow()->IsDone() == false) {
         // Game loop.
         game.HandleInput();
